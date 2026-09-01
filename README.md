@@ -21,7 +21,7 @@
 
 ## 下载与使用
 
-请在右侧 **Releases** 下载 `qingli.exe`。Windows 10/11 通常自带所需的 WebView2 组件；若程序提示缺失，请按引导安装 Microsoft Edge WebView2 Runtime。
+请在右侧 **Releases** 下载 `qingli.exe`。最新代码的构建会自动刷新到“最新开发版”；带 `v` 版本号的 Release 是可回溯的稳定版本。Windows 10/11 通常自带所需的 WebView2 组件；若程序提示缺失，请按引导安装 Microsoft Edge WebView2 Runtime。
 
 1. 双击打开 `qingli.exe`。
 2. 点击“开始扫描”。
@@ -44,7 +44,8 @@ npm run build:portable
 ## 项目维护
 
 - 每次功能、清理范围、构建方式或发布流程变更，都应同步更新本 README、[更新日志](CHANGELOG.md) 和自动构建配置。
-- 发布标签采用 `v主版本.次版本.修订版本` 格式；推送标签后 GitHub Actions 会自动构建 Windows 便携版并创建 Release。
+- 每次推送 main 都必须由 GitHub Actions 构建并更新“最新开发版” Release，确保 GitHub 始终有可直接下载的 `.exe`。
+- 发布标签采用 `v主版本.次版本.修订版本` 格式；推送标签后 GitHub Actions 会自动构建 Windows 便携版并创建独立的版本 Release。
 
 ## 安全设计
 
