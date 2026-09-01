@@ -1,0 +1,1 @@
+{"productName":"清理","version":"0.1.0","identifier":"com.qingli.app","build":{"frontendDist":"../dist","devUrl":"http://localhost:5173","beforeDevCommand":"npm run dev","beforeBuildCommand":"npm run build"},"app":{"windows":[{"title":"清理","width":980,"height":720,"resizable":true,"minWidth":680,"minHeight":620}]},"bundle":{"active":false}}

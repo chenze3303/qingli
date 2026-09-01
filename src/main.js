@@ -1,0 +1,26 @@
+import "./style.css";
+import { invoke } from "@tauri-apps/api/core";
+
+const app = document.querySelector("#app");
+let results = [];
+let selected = new Set();
+let summary = null;
+
+const fmt = bytes => bytes < 1024 ** 2 ? `${Math.ceil(bytes / 1024)} KB` : `${(bytes / 1024 ** 2).toFixed(bytes > 1024 ** 3 ? 1 : 0)} MB`;
+const total = () => results.filter(x => selected.has(x.id)).reduce((n, x) => n + x.bytes, 0);
+const empty = (title, body) => `<main class="shell"><section class="hero"><div class="orb orb-a"></div><div class="orb orb-b"></div><div class="mascot">✦</div><p class="eyebrow">QINGLI · 轻盈整理</p><h1>${title}</h1><p class="lead">${body}</p><button class="primary" id="scan">开始扫描 <span>→</span></button><p class="quiet">只扫描安全项目，不会修改任何文件</p></section></main>`;
+
+function renderHome() { app.innerHTML = empty("给电脑留一点呼吸空间", "发现临时文件、缓存和可安全清理的系统残留。全程由你确认。 "); document.querySelector("#scan").onclick = scan; }
+function renderScanning() { app.innerHTML = `<main class="shell center"><div class="spinner"></div><p class="eyebrow">正在细心检查</p><h1>扫描中…</h1><p class="lead">这不会删除或修改任何文件</p></main>`; }
+function renderResults() {
+  const cards = results.map(x => `<label class="card ${selected.has(x.id) ? "on" : ""}"><input type="checkbox" data-id="${x.id}" ${selected.has(x.id) ? "checked" : ""}><div class="card-icon">${x.icon}</div><div class="card-copy"><strong>${x.name}</strong><span>${x.description}</span>${x.requires_admin ? '<em>可能需要管理员权限</em>' : ""}</div><b>${fmt(x.bytes)}</b><small>${x.files} 个项目</small></label>`).join("");
+  app.innerHTML = `<main class="shell results"><header><button class="brand" id="home">✦ 清理</button><span>扫描结果</span><button class="text" id="history">历史记录</button></header><section class="intro"><p class="eyebrow">可以放心处理</p><h1>发现 <strong id="total">${fmt(total())}</strong> 可清理空间</h1><p class="lead">已默认选中低风险项目；浏览器缓存不会影响登录状态或个人资料。</p></section><section class="cards">${cards}</section><footer><span id="picked">已选择 ${[...selected].length} 项</span><button class="primary" id="clean">清理 ${fmt(total())} <span>→</span></button></footer></main>`;
+  document.querySelectorAll("input").forEach(box => box.onchange = () => { box.checked ? selected.add(box.dataset.id) : selected.delete(box.dataset.id); renderResults(); });
+  document.querySelector("#clean").onclick = confirmClean; document.querySelector("#home").onclick = renderHome; document.querySelector("#history").onclick = history;
+}
+function confirmClean() { app.innerHTML = `<main class="shell center"><div class="mascot small">✦</div><p class="eyebrow">最后确认</p><h1>准备释放 ${fmt(total())}</h1><p class="lead">清理过程不可撤销。被系统占用的文件会自动跳过。</p><div class="actions"><button class="secondary" id="back">返回检查</button><button class="primary" id="go">确认清理</button></div></main>`; document.querySelector("#back").onclick = renderResults; document.querySelector("#go").onclick = clean; }
+async function scan() { renderScanning(); try { results = await invoke("scan_cleanup"); selected = new Set(results.filter(x => x.bytes > 0).map(x => x.id)); renderResults(); } catch (e) { app.innerHTML = empty("暂时无法扫描", String(e)); document.querySelector("#scan").onclick = scan; } }
+async function clean() { app.innerHTML = `<main class="shell center"><div class="spinner"></div><p class="eyebrow">正在整理</p><h1>请稍候…</h1></main>`; try { summary = await invoke("run_cleanup", { ids: [...selected] }); renderDone(); } catch (e) { app.innerHTML = empty("清理没有完成", String(e)); document.querySelector("#scan").onclick = scan; } }
+function renderDone() { const skipped = summary.skipped ? `<p class="quiet">${summary.skipped} 个被占用或无权限的项目已安全跳过。</p>` : ""; app.innerHTML = `<main class="shell center"><div class="done">✓</div><p class="eyebrow">整理完成</p><h1>释放了 ${fmt(summary.freed_bytes)}</h1><p class="lead">电脑已经轻快一点了。</p>${skipped}<div class="actions"><button class="secondary" id="again">再次扫描</button><button class="primary" id="view-history">查看历史</button></div></main>`; document.querySelector("#again").onclick = scan; document.querySelector("#view-history").onclick = history; }
+async function history() { const logs = await invoke("get_history"); const date = x => /^\d+$/.test(x) ? new Date(Number(x) * 1000).toLocaleString("zh-CN", { hour12:false }) : x; app.innerHTML = `<main class="shell results"><header><button class="brand" id="home">✦ 清理</button><span>清理历史</span><span></span></header><section class="intro"><p class="eyebrow">只保存在这台电脑</p><h1>最近的整理</h1></section><section class="history">${logs.length ? logs.map(x => `<article><b>${date(x.timestamp)}</b><span>释放 ${fmt(x.freed_bytes)} · 跳过 ${x.skipped} 项</span></article>`).join("") : "<p>还没有清理记录。</p>"}</section></main>`; document.querySelector("#home").onclick = renderHome; }
+renderHome();
