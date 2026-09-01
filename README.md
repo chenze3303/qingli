@@ -41,6 +41,11 @@ npm run build:portable
 
 产物位于 `src-tauri/target/release/qingli.exe`。正式发布前，建议对 `.exe` 做代码签名，并在干净的 Windows 10/11 虚拟机测试权限不足、文件被占用和 WebView2 缺失的情况。
 
+## 项目维护
+
+- 每次功能、清理范围、构建方式或发布流程变更，都应同步更新本 README、[更新日志](CHANGELOG.md) 和自动构建配置。
+- 发布标签采用 `v主版本.次版本.修订版本` 格式；推送标签后 GitHub Actions 会自动构建 Windows 便携版并创建 Release。
+
 ## 安全设计
 
 - 前端无法传入任意文件路径；Rust 引擎只执行内置白名单规则。
