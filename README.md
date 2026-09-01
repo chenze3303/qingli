@@ -20,7 +20,7 @@
 
 ## 下载与使用
 
-发布版完成后，请在右侧 **Releases** 下载 `qingli.exe`。Windows 10/11 通常自带所需的 WebView2 组件；若程序提示缺失，请按引导安装 Microsoft Edge WebView2 Runtime。
+请在右侧 **Releases** 下载 `qingli.exe`。Windows 10/11 通常自带所需的 WebView2 组件；若程序提示缺失，请按引导安装 Microsoft Edge WebView2 Runtime。
 
 1. 双击打开 `qingli.exe`。
 2. 点击“开始扫描”。
